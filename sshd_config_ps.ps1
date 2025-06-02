@@ -1,20 +1,20 @@
 #Requires -RunAsAdministrator
 
-# Задаем переменные
+# Р—Р°РґР°РµРј РїРµСЂРµРјРµРЅРЅС‹Рµ
 $admin_username = "special_user_ssh"
 $ssh_port = 12345
 
-# Разрешенные IP в формате CIDR
+# Р Р°Р·СЂРµС€РµРЅРЅС‹Рµ IP РІ С„РѕСЂРјР°С‚Рµ CIDR
 $allowed_ips = @(
     "10.11.12.13",
     "192.168.88.99",
     "172.16.32.25"
 )
 
-# === НЕРЕКОМЕНДУЕМАЯ ОПЦИЯ : Пароль в открытом виде (раскомментируйте и задайте свой пароль) ===
+# === РќР•Р Р•РљРћРњР•РќР”РЈР•РњРђРЇ РћРџР¦РРЇ : РџР°СЂРѕР»СЊ РІ РѕС‚РєСЂС‹С‚РѕРј РІРёРґРµ (СЂР°СЃРєРѕРјРјРµРЅС‚РёСЂСѓР№С‚Рµ Рё Р·Р°РґР°Р№С‚Рµ СЃРІРѕР№ РїР°СЂРѕР»СЊ) ===
 #$plain_password = "Super-Secret5-Passw0rd"
 
-# Функция для безопасного ввода пароля
+# Р¤СѓРЅРєС†РёСЏ РґР»СЏ Р±РµР·РѕРїР°СЃРЅРѕРіРѕ РІРІРѕРґР° РїР°СЂРѕР»СЏ
 function Get-SecurePassword {
     param(
         [Parameter(Mandatory=$true)]
@@ -25,38 +25,38 @@ function Get-SecurePassword {
     $confirm = $null
     
     do {
-        # Первый ввод пароля
+        # РџРµСЂРІС‹Р№ РІРІРѕРґ РїР°СЂРѕР»СЏ
         Write-Host $Prompt -ForegroundColor Cyan -NoNewline
         $password = Read-Host -AsSecureString
         
-        # Проверка на пустой пароль
+        # РџСЂРѕРІРµСЂРєР° РЅР° РїСѓСЃС‚РѕР№ РїР°СЂРѕР»СЊ
         if (-not $password -or $password.Length -eq 0) {
-            Write-Host "Пароль не может быть пустым!" -ForegroundColor Red
+            Write-Host "РџР°СЂРѕР»СЊ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!" -ForegroundColor Red
             continue
         }
         
-        # Подтверждение пароля
-        Write-Host "Повторите пароль: " -ForegroundColor Cyan -NoNewline
+        # РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїР°СЂРѕР»СЏ
+        Write-Host "РџРѕРІС‚РѕСЂРёС‚Рµ РїР°СЂРѕР»СЊ: " -ForegroundColor Cyan -NoNewline
         $confirm = Read-Host -AsSecureString
         
-        # Сравнение паролей
+        # РЎСЂР°РІРЅРµРЅРёРµ РїР°СЂРѕР»РµР№
         $passwordText = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
             [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
         $confirmText = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
             [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($confirm))
         
         if ($passwordText -ne $confirmText) {
-            Write-Host "Пароли не совпадают! Попробуйте снова." -ForegroundColor Red
+            Write-Host "РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚! РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР°." -ForegroundColor Red
         }
         else {
-            # Очистка текстовых переменных из памяти
+            # РћС‡РёСЃС‚РєР° С‚РµРєСЃС‚РѕРІС‹С… РїРµСЂРµРјРµРЅРЅС‹С… РёР· РїР°РјСЏС‚Рё
             $passwordText = $null
             $confirmText = $null
             [System.GC]::Collect()
             return $password
         }
         
-        # Очистка текстовых переменных из памяти при несовпадении
+        # РћС‡РёСЃС‚РєР° С‚РµРєСЃС‚РѕРІС‹С… РїРµСЂРµРјРµРЅРЅС‹С… РёР· РїР°РјСЏС‚Рё РїСЂРё РЅРµСЃРѕРІРїР°РґРµРЅРёРё
         $passwordText = $null
         $confirmText = $null
         [System.GC]::Collect()
@@ -64,79 +64,79 @@ function Get-SecurePassword {
     } while ($true)
 }
 
-# Обработка пароля администратора
+# РћР±СЂР°Р±РѕС‚РєР° РїР°СЂРѕР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
 if ($plain_password) {
-    Write-Host "`nИспользуется пароль из переменной `$plain_password" -ForegroundColor Yellow
+    Write-Host "`nРСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїР°СЂРѕР»СЊ РёР· РїРµСЂРµРјРµРЅРЅРѕР№ `$plain_password" -ForegroundColor Yellow
     $admin_password = ConvertTo-SecureString $plain_password -AsPlainText -Force
 }
 else {
-    Write-Host "`n=== УСТАНОВКА ПАРОЛЯ АДМИНИСТРАТОРА SSH ===" -ForegroundColor Yellow
-    Write-Host "Пароль должен соответствовать требованиям сложности Windows:" -ForegroundColor Cyan
-    Write-Host "  - Минимум 8 символов" -ForegroundColor Cyan
-    Write-Host "  - Заглавные и строчные буквы" -ForegroundColor Cyan
-    Write-Host "  - Цифры и специальные символы" -ForegroundColor Cyan
-    Write-Host "  - Не содержать имя пользователя" -ForegroundColor Cyan
+    Write-Host "`n=== РЈРЎРўРђРќРћР’РљРђ РџРђР РћР›РЇ РђР”РњРРќРРЎРўР РђРўРћР Рђ SSH ===" -ForegroundColor Yellow
+    Write-Host "РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ С‚СЂРµР±РѕРІР°РЅРёСЏРј СЃР»РѕР¶РЅРѕСЃС‚Рё Windows:" -ForegroundColor Cyan
+    Write-Host "  - РњРёРЅРёРјСѓРј 8 СЃРёРјРІРѕР»РѕРІ" -ForegroundColor Cyan
+    Write-Host "  - Р—Р°РіР»Р°РІРЅС‹Рµ Рё СЃС‚СЂРѕС‡РЅС‹Рµ Р±СѓРєРІС‹" -ForegroundColor Cyan
+    Write-Host "  - Р¦РёС„СЂС‹ Рё СЃРїРµС†РёР°Р»СЊРЅС‹Рµ СЃРёРјРІРѕР»С‹" -ForegroundColor Cyan
+    Write-Host "  - РќРµ СЃРѕРґРµСЂР¶Р°С‚СЊ РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ" -ForegroundColor Cyan
 
-    $admin_password = Get-SecurePassword -Prompt "Введите пароль для администратора $admin_username`: "
+    $admin_password = Get-SecurePassword -Prompt "Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ РґР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° $admin_username`: "
 }
 
-# Настройка аккаунта админа
+# РќР°СЃС‚СЂРѕР№РєР° Р°РєРєР°СѓРЅС‚Р° Р°РґРјРёРЅР°
 try {
-    # Настраиваем политику срока жизни паролей (для систем без домена)
+    # РќР°СЃС‚СЂР°РёРІР°РµРј РїРѕР»РёС‚РёРєСѓ СЃСЂРѕРєР° Р¶РёР·РЅРё РїР°СЂРѕР»РµР№ (РґР»СЏ СЃРёСЃС‚РµРј Р±РµР· РґРѕРјРµРЅР°)
     net accounts /maxpwage:unlimited | Out-Null
 
-    # Находим название группы администраторов по SID
+    # РќР°С…РѕРґРёРј РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ РїРѕ SID
     $adminGroup = Get-LocalGroup -SID "S-1-5-32-544"
 
-    # Создаем аккаунт, если он не существует
+    # РЎРѕР·РґР°РµРј Р°РєРєР°СѓРЅС‚, РµСЃР»Рё РѕРЅ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
     if (-not (Get-LocalUser -Name $admin_username -ErrorAction SilentlyContinue)) {
         New-LocalUser -Name $admin_username -Password $admin_password -AccountNeverExpires -PasswordNeverExpires
     }
     else {
-        # Обновляем пароль, если пользователь уже существует
+        # РћР±РЅРѕРІР»СЏРµРј РїР°СЂРѕР»СЊ, РµСЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
         Set-LocalUser -Name $admin_username -Password $admin_password -PasswordNeverExpires $true
     }
 
-    # Прячем аккаунт с экрана winlogon
+    # РџСЂСЏС‡РµРј Р°РєРєР°СѓРЅС‚ СЃ СЌРєСЂР°РЅР° winlogon
     $registryPath = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
     if (-not (Test-Path $registryPath)) {
         New-Item -Path $registryPath -Force | Out-Null
     }
     Set-ItemProperty -Path $registryPath -Name $admin_username -Value 0 -Type DWord -Force
 
-    # Добавляем в группу администраторов, если не добавлен
+    # Р”РѕР±Р°РІР»СЏРµРј РІ РіСЂСѓРїРїСѓ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ, РµСЃР»Рё РЅРµ РґРѕР±Р°РІР»РµРЅ
     if (-not (Get-LocalGroupMember -Group $adminGroup -Member $admin_username -ErrorAction SilentlyContinue)) {
         Add-LocalGroupMember -Group $adminGroup -Member $admin_username -ErrorAction Stop
     }
 }
 catch {
-    Write-Error "Ошибка конфигурирования аккаунта: $_"
+    Write-Error "РћС€РёР±РєР° РєРѕРЅС„РёРіСѓСЂРёСЂРѕРІР°РЅРёСЏ Р°РєРєР°СѓРЅС‚Р°: $_"
     exit 1
 }
 
-# Установка OpenSSH Server
+# РЈСЃС‚Р°РЅРѕРІРєР° OpenSSH Server
 try {
-    Write-Host "`n=== Выполняется загрузка и установка OpenSSH Server ===" -ForegroundColor Yellow
+    Write-Host "`n=== Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ Р·Р°РіСЂСѓР·РєР° Рё СѓСЃС‚Р°РЅРѕРІРєР° OpenSSH Server ===" -ForegroundColor Yellow
     $capability = Get-WindowsCapability -Online -Name "OpenSSH.Server*"
     if ($capability.State -ne "Installed") {
         $capability | Add-WindowsCapability -Online
     }
 }
 catch {
-    Write-Error "Ошибка установки OpenSSH Server: $_"
+    Write-Error "РћС€РёР±РєР° СѓСЃС‚Р°РЅРѕРІРєРё OpenSSH Server: $_"
     exit 2
 }
 
-# Настройка SSH
+# РќР°СЃС‚СЂРѕР№РєР° SSH
 $sshConfigPath = "$env:ProgramData\ssh\sshd_config"
 try {
-    # Запускаем службу для создания конфига по-умолчанию
+    # Р—Р°РїСѓСЃРєР°РµРј СЃР»СѓР¶Р±Сѓ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РєРѕРЅС„РёРіР° РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ
     Start-Service sshd -ErrorAction Stop
     
-    # Читаем конфиг
+    # Р§РёС‚Р°РµРј РєРѕРЅС„РёРі
     $configContent = Get-Content $sshConfigPath -Raw
     
-    # Задаем порт SSH
+    # Р—Р°РґР°РµРј РїРѕСЂС‚ SSH
     if ($configContent -match "(?m)^#?Port\s+.*") {
         $configContent = $configContent -replace "(?m)^#?Port\s+.*", "Port $ssh_port"
     }
@@ -144,13 +144,13 @@ try {
         $configContent = "Port $ssh_port`n$configContent"
     }
     
-    # Генерируем строку AllowUsers для всех разрешенных IP
+    # Р“РµРЅРµСЂРёСЂСѓРµРј СЃС‚СЂРѕРєСѓ AllowUsers РґР»СЏ РІСЃРµС… СЂР°Р·СЂРµС€РµРЅРЅС‹С… IP
     $allowUsersEntries = foreach ($ip in $allowed_ips) {
         "${admin_username}@$ip"
     }
     $allowUsersString = $allowUsersEntries -join " "
     
-    # Обновляем AllowUsers
+    # РћР±РЅРѕРІР»СЏРµРј AllowUsers
     if ($configContent -match "(?m)^#?AllowUsers\s+.*") {
         $configContent = $configContent -replace "(?m)^#?AllowUsers\s+.*", "AllowUsers $allowUsersString"
     }
@@ -162,20 +162,20 @@ try {
     
 }
 catch {
-    Write-Error "Ошибка настройки SSH: $_"
+    Write-Error "РћС€РёР±РєР° РЅР°СЃС‚СЂРѕР№РєРё SSH: $_"
     exit 3
 }
 
-# Настройка брандмауэра Windows
+# РќР°СЃС‚СЂРѕР№РєР° Р±СЂР°РЅРґРјР°СѓСЌСЂР° Windows
 try {
     $ruleName = "OpenSSH_CustomPort"
     
-    # Удаляем правило, если оно уже существует
+    # РЈРґР°Р»СЏРµРј РїСЂР°РІРёР»Рѕ, РµСЃР»Рё РѕРЅРѕ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
     if (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue) {
         Remove-NetFirewallRule -DisplayName $ruleName -Confirm:$false
     }
     
-    # Создаем новое правило для всех разрешенных IP
+    # РЎРѕР·РґР°РµРј РЅРѕРІРѕРµ РїСЂР°РІРёР»Рѕ РґР»СЏ РІСЃРµС… СЂР°Р·СЂРµС€РµРЅРЅС‹С… IP
     New-NetFirewallRule -DisplayName $ruleName `
         -Name $ruleName `
         -Protocol TCP `
@@ -186,32 +186,32 @@ try {
         -Enabled True | Out-Null
 }
 catch {
-    Write-Error "Ошибка настройки брандмауэра: $_"
+    Write-Error "РћС€РёР±РєР° РЅР°СЃС‚СЂРѕР№РєРё Р±СЂР°РЅРґРјР°СѓСЌСЂР°: $_"
     exit 4
 }
 
-# Финальная настройка службы sshd
+# Р¤РёРЅР°Р»СЊРЅР°СЏ РЅР°СЃС‚СЂРѕР№РєР° СЃР»СѓР¶Р±С‹ sshd
 try {
     Set-Service -Name sshd -StartupType Automatic
     Restart-Service sshd -Force -ErrorAction Stop
 }
 catch {
-    Write-Error "Ошибка настройки службы: $_"
+    Write-Error "РћС€РёР±РєР° РЅР°СЃС‚СЂРѕР№РєРё СЃР»СѓР¶Р±С‹: $_"
     exit 5
 }
 
-Write-Host "`nНастройка полностью завершена!" -ForegroundColor Green
-Write-Host "Доступ разрешен для пользователя: $admin_username" -ForegroundColor Cyan
-Write-Host "Порт SSH: $ssh_port" -ForegroundColor Cyan
-Write-Host "Разрешенные IP:" -ForegroundColor Cyan
+Write-Host "`nРќР°СЃС‚СЂРѕР№РєР° РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅР°!" -ForegroundColor Green
+Write-Host "Р”РѕСЃС‚СѓРї СЂР°Р·СЂРµС€РµРЅ РґР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ: $admin_username" -ForegroundColor Cyan
+Write-Host "РџРѕСЂС‚ SSH: $ssh_port" -ForegroundColor Cyan
+Write-Host "Р Р°Р·СЂРµС€РµРЅРЅС‹Рµ IP:" -ForegroundColor Cyan
 $allowed_ips | ForEach-Object { Write-Host "  - $_" -ForegroundColor Cyan }
 
-# Дополнительные рекомендации
+# Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ СЂРµРєРѕРјРµРЅРґР°С†РёРё
 if (-not $plain_password) {
-    Write-Host "`n=== ВАЖНО ===" -ForegroundColor Red
-    Write-Host "Пароль администратора не сохранен в скрипте!" -ForegroundColor Red
-    Write-Host "Сохраните его в надежном месте." -ForegroundColor Red
+    Write-Host "`n=== Р’РђР–РќРћ ===" -ForegroundColor Red
+    Write-Host "РџР°СЂРѕР»СЊ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° РЅРµ СЃРѕС…СЂР°РЅРµРЅ РІ СЃРєСЂРёРїС‚Рµ!" -ForegroundColor Red
+    Write-Host "РЎРѕС…СЂР°РЅРёС‚Рµ РµРіРѕ РІ РЅР°РґРµР¶РЅРѕРј РјРµСЃС‚Рµ." -ForegroundColor Red
 }
 
-# Дополнительно очищаем открытый пароль
+# Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ РѕС‡РёС‰Р°РµРј РѕС‚РєСЂС‹С‚С‹Р№ РїР°СЂРѕР»СЊ
 $plain_password = $null
