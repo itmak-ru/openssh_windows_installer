@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(HelpMessage = "Принудительная установка через MSI")]
     [bool]$forceMsiInstall = $false,
